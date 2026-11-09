@@ -1,0 +1,6 @@
+/target/
+
+# Configurações pessoais de IDEs 
+.idea/
+*.iml
+nbactions*.xml
