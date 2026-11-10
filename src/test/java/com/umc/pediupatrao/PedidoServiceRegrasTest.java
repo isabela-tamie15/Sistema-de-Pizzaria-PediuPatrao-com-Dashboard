@@ -190,6 +190,8 @@ class PedidoServiceRegrasTest {
         assertEquals(StatusPedido.SAIU_PARA_ENTREGA, resultado.getStatus());
         assertEquals("gerente", resultado.getResponsavelSaida());
         assertNotNull(resultado.getDataHoraSaida());
+        // Dashboard: o tipo de saída fica guardado para o gráfico Entrega x Retirada
+        assertEquals(StatusPedido.SAIU_PARA_ENTREGA, resultado.getTipoSaida());
     }
 
     // ===== Regras da Parte 1 que continuam valendo =====

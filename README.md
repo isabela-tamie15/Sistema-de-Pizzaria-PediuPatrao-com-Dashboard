@@ -1,6 +1,6 @@
 # 🍕 Sistema de Pizzaria - PediuPatrão
 
-> Sistema web de gerenciamento de pedidos para pizzaria, desenvolvido com **Spring Boot + MongoDB Atlas**, evoluído a partir do projeto base da disciplina. Implementa controle de acesso por perfil, fluxo controlado de status de pedidos, cancelamentos e descontos exclusivos do gerente, e auditoria persistente de operações.
+> Sistema web de gerenciamento de pedidos para pizzaria, desenvolvido com **Spring Boot + MongoDB Atlas**, evoluído a partir do projeto base da disciplina. Tem controle de acesso por perfil, fluxo controlado de status dos pedidos, cancelamentos e descontos exclusivos do gerente, auditoria persistente das operações e **Dashboard Administrativo** com API REST própria.
 
 ---
 
@@ -11,12 +11,14 @@
 ![Spring Security](https://img.shields.io/badge/Spring%20Security-6-brightgreen?logo=springsecurity&logoColor=white)
 ![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas-green?logo=mongodb&logoColor=white)
 ![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3-005F0F?logo=thymeleaf&logoColor=white)
+![Chart.js](https://img.shields.io/badge/Chart.js-2.9-FF6384?logo=chartdotjs&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-3.9-C71A36?logo=apachemaven&logoColor=white)
 
 </div>
 
 ---
-Projeto de sistema desenvolvido para a disciplina de **Análise e Projeto de Software** da Universidade de Mogi das Cruzes (UMC).
+
+Projeto desenvolvido para a disciplina de **Análise e Projeto de Software** da Universidade de Mogi das Cruzes (UMC).
 
 | |                                   |
 |---|-----------------------------------|
@@ -26,25 +28,62 @@ Projeto de sistema desenvolvido para a disciplina de **Análise e Projeto de Sof
 
 ---
 
+## 📊 Dashboard Administrativo
+
+Painel para o responsável pela pizzaria acompanhar as vendas, a situação dos pedidos e as tendências da operação. A tela busca todos os números em uma **API REST própria** (`/api/dashboard/**`), integrada ao MongoDB.
+
+<div align="center">
+
+![Dashboard Administrativo](docs/evidencias/06-atualizacao.png)
+
+</div>
+
+| 📌 O que o painel mostra | |
+|---|---|
+| **4 indicadores** | Pedidos realizados, pedidos cancelados, faturamento e ticket médio |
+| **5 gráficos** | Pedidos por dia da semana, pedidos por horário, pedidos por status, entrega x retirada e produtos mais vendidos |
+| **Filtros** | Data inicial e data final, com atalhos Hoje, 30 dias e Este ano |
+| **Acesso** | Somente ADMIN e GERENTE |
+
+### 📄 Documentação da atividade
+
+| Entregável | Onde está |
+|---|---|
+| Requisitos funcionais e não funcionais | [Documentação do Dashboard, seções 2 e 3](docs/DOCUMENTACAO-DASHBOARD.md#-2-requisitos-funcionais) |
+| Endpoints: parâmetros, exemplos de requisição e resposta, erros | [Documentação do Dashboard, seção 5](docs/DOCUMENTACAO-DASHBOARD.md#-5-documentação-dos-endpoints) |
+| Evidências de testes | [Documentação do Dashboard, seção 6](docs/DOCUMENTACAO-DASHBOARD.md#-6-evidências-de-testes) e pasta [`docs/evidencias`](docs/evidencias) |
+| Dashboard administrativo funcional | Print acima e `http://localhost:8080/dashboard` |
+| Decisões de análise e projeto | [Documentação do Dashboard, seção 7](docs/DOCUMENTACAO-DASHBOARD.md#-7-decisões-de-análise-e-projeto) |
+| Branch gitflow da API | [`feature/dashboard-api`](#-gitflow) |
+| Vídeo de até 3 minutos | [Demonstração em vídeo](#-demonstração-em-vídeo) |
+
+---
+
 ## 🎬 Demonstração em vídeo
 
-> 🔗 **[Assistir no YouTube](https://youtu.be/dnC8DVx6CdE)** 
+<!-- ⚠️ TROCAR "COLE_AQUI_O_LINK_DO_VIDEO_DO_DASHBOARD" PELO LINK DO YOUTUBE -->
 
-O vídeo demonstra: login com os três perfis, restrições de acesso por perfil, criação e acompanhamento de pedidos, aplicação de desconto e cancelamento pelo GERENTE, consulta à auditoria por ADMIN e GERENTE.
+| Vídeo | Link | Conteúdo |
+|---|---|---|
+| 📊 **Dashboard Administrativo** | 🔗 **[Assistir no YouTube](https://youtu.be/YWn1Q0W_gUg)** | Dashboard funcionando, API e justificativa das decisões de análise e projeto |
+| 🍕 Perfis, pedidos e auditoria | 🔗 [Assistir no YouTube](https://youtu.be/dnC8DVx6CdE) | Login com os três perfis, restrições de acesso, fluxo de pedidos, desconto e cancelamento pelo GERENTE e auditoria |
 
 ---
 
 ## 📋 Sumário
 
+- [Dashboard Administrativo](#-dashboard-administrativo)
 - [Demonstração em vídeo](#-demonstração-em-vídeo)
 - [Como executar](#️-como-executar)
 - [Usuários de demonstração](#-usuários-de-demonstração)
 - [Requisitos implementados](#-requisitos-implementados)
 - [Matriz de permissões](#-matriz-de-permissões)
 - [Rotas da aplicação](#️-rotas-da-aplicação)
+- [Testes automatizados](#-testes-automatizados)
 - [Testes manuais](#-testes-manuais)
 - [Principais alterações em relação ao projeto base](#-principais-alterações-em-relação-ao-projeto-base)
 - [Estrutura do projeto](#️-estrutura-do-projeto)
+- [Gitflow](#-gitflow)
 
 ---
 
@@ -54,10 +93,10 @@ O vídeo demonstra: login com os três perfis, restrições de acesso por perfil
 
 - **Java 21** (JDK)
 - **Maven 3.9+** (ou use o wrapper `./mvnw` incluído no projeto)
-- **Conta no MongoDB Atlas** — o banco de dados é na nuvem; não é necessário instalar MongoDB localmente
+- **Conta no MongoDB Atlas**: o banco de dados é na nuvem, não é necessário instalar o MongoDB localmente
 
 > 💡 **Por que MongoDB Atlas em vez de Docker?**
-> Esta versão utiliza MongoDB Atlas (nuvem gratuita) no lugar de Docker Compose. A conexão já está configurada no `application.properties`. Quem for clonar e rodar localmente precisa criar sua própria conta no Atlas e substituir a connection string — veja o passo 3.
+> Esta versão usa o MongoDB Atlas (nuvem gratuita) no lugar do Docker Compose. Quem for clonar e rodar o projeto precisa criar sua própria conta no Atlas e colocar a sua connection string, como no passo 2.
 
 ---
 
@@ -65,8 +104,8 @@ O vídeo demonstra: login com os três perfis, restrições de acesso por perfil
 
 **1. Clone o repositório:**
 ```bash
-git clone https://github.com/isabela-tamie15/sistema-de-pizzaria-pediupatrao.git
-cd sistema-de-pizzaria-pediupatrao
+git clone https://github.com/isabela-tamie15/Sistema-de-Pizzaria-PediuPatrao-com-Dashboard.git
+cd Sistema-de-Pizzaria-PediuPatrao-com-Dashboard
 ```
 
 **2. Configure a conexão com o MongoDB Atlas:**
@@ -81,6 +120,8 @@ spring.data.mongodb.database=pizzaria
 
 > 📌 Para criar uma conta gratuita: [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
 > Crie um cluster, um usuário de banco e libere seu IP no Network Access.
+
+> 🔒 O usuário e a senha do banco nunca são enviados ao GitHub: no repositório, a linha fica com `SEU_USUARIO:SUA_SENHA`.
 
 **3. Execute o projeto:**
 
@@ -104,6 +145,8 @@ mvnw.cmd spring-boot:run
 http://localhost:8080/login
 ```
 
+O Dashboard Administrativo fica em `http://localhost:8080/dashboard` (perfis ADMIN e GERENTE).
+
 > ✅ Na primeira inicialização, o `DataInitializer` cria automaticamente os três usuários de demonstração. Não é necessário cadastrar nada manualmente.
 
 ---
@@ -118,31 +161,33 @@ Criados automaticamente pelo `DataInitializer` ao subir a aplicação, caso não
 | `gerente` | `teste123` | GERENTE |
 | `atendente` | `teste123` | ATENDENTE |
 
-> As credenciais acima são apenas para demonstração acadêmica — nunca use senhas simples em sistemas reais.
+> As credenciais acima são apenas para demonstração acadêmica. Nunca use senhas simples em sistemas reais.
 
 ---
 
 ## 📌 Requisitos implementados
 
-### RF01 — Controle de usuários e permissões
+### 🍕 Parte 1: Sistema de pedidos
 
-- Perfis definidos como `String` na entidade `Usuario` (`ADMIN`, `GERENTE`, `ATENDENTE`), carregados do MongoDB pelo `UsuarioDetailsService`
-- Autorização configurada no `SecurityConfig` com regras por URL (`.requestMatchers(...)`)
-- `@EnableMethodSecurity` ativado para permitir `@PreAuthorize` nos controllers
-- Menus ocultados por perfil via `sec:authorize` no Thymeleaf — acessar a URL sem permissão resulta em redirecionamento para `/acesso-negado`
-- Cancelamento e desconto restritos à URL `/pedidos/*/cancelar` e `/pedidos/*/desconto` apenas para `ROLE_GERENTE`
-- Gestão de usuários restrita à URL `/usuarios/**` e `/api/usuarios/**` apenas para `ROLE_ADMIN`
-- CSRF ativo — formulários Thymeleaf recebem o token automaticamente
+#### RF01: Controle de usuários e permissões
 
-### RF02 — Evolução do cadastro de pedidos
+- Perfis `ADMIN`, `GERENTE` e `ATENDENTE` na entidade `Usuario`, carregados do MongoDB pelo `UsuarioDetailsService`
+- Segurança em duas camadas: regras por URL e método HTTP no `SecurityConfig` e `@PreAuthorize` nos services
+- Menus ocultados por perfil com `sec:authorize` no Thymeleaf; acessar a URL sem permissão leva para `/acesso-negado`
+- Cancelamento e desconto restritos ao `GERENTE`; gestão de usuários restrita ao `ADMIN`
+- CSRF ativo em todas as rotas: os formulários Thymeleaf recebem o token automaticamente e as chamadas `fetch()` enviam o token no cabeçalho
+- API sem login responde `401` em vez de redirecionar para a tela de login
+- Perfis aceitos no cadastro: apenas `ADMIN`, `GERENTE` e `ATENDENTE`; username único; ninguém altera o próprio perfil nem exclui a própria conta
 
-- Entidade `Pedido` com campos: `nomeCliente`, `itens` (lista de `ItemPedido`), `status`, `dataPedido`, `valorTotal`, `observacoes`, `desconto`, `responsavelPeloRegistro`
-- Valor total calculado no servidor pelo `PedidoService`, não pelo formulário
-- Status controlado pelo enum `StatusPedido` com os únicos valores válidos do fluxo
+#### RF02: Evolução do cadastro de pedidos
 
-### RF03 — Controle de entrada, saída e transições
+- Entidade `Pedido` com os campos `nomeCliente`, `itens` (lista de `ItemPedido`), `status`, `dataPedido`, `valorBruto`, `valorDesconto`, `valorTotal`, `observacoes`, `desconto`, `responsavelPeloRegistro`, `responsavelSaida`, `dataHoraSaida` e `tipoSaida`
+- Preço de cada item buscado no cadastro de produtos e valor total calculado no servidor pelo `PedidoService`; o preço enviado pelo formulário é ignorado
+- Status controlado pelo enum `StatusPedido`, com os únicos valores válidos do fluxo
 
-Fluxo implementado no enum `StatusPedido` e validado pelo `PedidoService`:
+#### RF03: Controle de entrada, saída e transições
+
+Fluxo definido no enum `StatusPedido` e validado pelo `PedidoService`:
 
 ```
 RECEBIDO → EM_PREPARACAO → PRONTO → SAIU_PARA_ENTREGA
@@ -154,19 +199,22 @@ RECEBIDO → EM_PREPARACAO → PRONTO → SAIU_PARA_ENTREGA
 ```
 
 - Transições fora do fluxo são bloqueadas pelo método `validarTransicaoDeStatus()` com exceção de negócio
-- `CANCELADO` é estado terminal — nenhuma alteração posterior é aceita
-- Responsável pelo registro capturado automaticamente via `SecurityContextHolder`
+- `CANCELADO` é estado final: nenhuma alteração posterior é aceita
+- Responsável pelo registro capturado automaticamente pelo `SecurityContextHolder`
+- Na saída (`SAIU_PARA_ENTREGA` ou `RETIRADO`), o responsável, a data/hora e o tipo de saída ficam gravados no próprio pedido
 
-### RF04 — Cancelamentos e descontos
+#### RF04: Cancelamentos e descontos
 
-- **Cancelamento:** exclusivo do GERENTE, exige justificativa, bloqueado após saída para entrega/retirada
-- **Desconto:** exclusivo do GERENTE, percentual máximo de 20%, recalculado no servidor
-- Ambas as operações geram registro de auditoria automaticamente
+- **Cancelamento:** exclusivo do GERENTE, exige justificativa, bloqueado após a saída para entrega ou retirada
+- **Desconto:** exclusivo do GERENTE, de 1% a 20%, calculado sempre sobre o valor original dos itens; um novo desconto substitui o anterior, e o desconto é bloqueado após a saída
+- As duas operações geram registro de auditoria automaticamente
 
-### RF05 — Auditoria
+#### RF05: Auditoria
 
-- Entidade `Auditoria` com coleção `auditorias` no MongoDB
-- Registra: usuário responsável, ação realizada, data e hora, e detalhes do evento
+- Entidade `Auditoria` com a coleção `auditorias` no MongoDB
+- Registra: usuário e perfil, ação, entidade (PEDIDO, CLIENTE, USUARIO) e seu id, campo alterado, valor anterior, valor novo, justificativa e data/hora
+- A alteração de um cliente gera um registro por campo modificado (ex: `telefone`, `logradouro`), com o valor anterior e o novo
+- Registros só podem ser incluídos e consultados: o `AuditoriaRepository` não tem métodos de alteração ou exclusão
 - Operações auditadas automaticamente pelo `AuditoriaService`:
 
 | 📋 Ação | ⏱️ Quando |
@@ -175,9 +223,25 @@ RECEBIDO → EM_PREPARACAO → PRONTO → SAIU_PARA_ENTREGA
 | `STATUS_ATUALIZADO` | Cada mudança de status |
 | `DESCONTO_APLICADO` | Aplicação de desconto pelo GERENTE |
 | `PEDIDO_CANCELADO` | Cancelamento com justificativa |
+| `CLIENTE_CRIADO` / `CLIENTE_ATUALIZADO` / `CLIENTE_EXCLUIDO` | Operações em clientes (atualização: um registro por campo) |
+| `USUARIO_CRIADO` / `PERFIL_ALTERADO` / `USUARIO_EXCLUIDO` | Gestão de usuários (sem registrar senha) |
 
 - Consulta exclusiva para `ADMIN` e `GERENTE` na tela **Auditoria**
-- Filtros por `usuarioResponsavel` e `acao` via `@RequestParam(required = false)` — URL com ou sem parâmetros funciona
+- Filtros por `usuarioResponsavel` e `acao` com `@RequestParam(required = false)`: a URL funciona com ou sem parâmetros
+
+### 📊 Parte 2: Dashboard Administrativo
+
+| Requisito | Implementação |
+|---|---|
+| RF01: Indicadores gerais | 4 cards: pedidos realizados, pedidos cancelados, faturamento e ticket médio |
+| RF02: Análise de vendas | Gráficos de pedidos por dia da semana e por horário (dias e horários de mais vendas) |
+| RF03: Situação dos pedidos | Gráficos de pedidos por status e de entrega x retirada |
+| RF04: Produtos mais vendidos | Gráfico com o top 5 de produtos |
+| RF05: Filtros | Data inicial e data final, com atalhos Hoje / 30 dias / Este ano |
+| RF06: Integração com a API | A tela consome `/api/dashboard/**` com `fetch()` |
+| RF07: Atualização e tratamento | Botão Atualizar, horário da última atualização, mensagens de erro e tratamento de dados incompletos |
+
+Requisitos não funcionais, endpoints, evidências e decisões em [docs/DOCUMENTACAO-DASHBOARD.md](docs/DOCUMENTACAO-DASHBOARD.md).
 
 ---
 
@@ -185,15 +249,20 @@ RECEBIDO → EM_PREPARACAO → PRONTO → SAIU_PARA_ENTREGA
 
 | Funcionalidade | ADMIN | GERENTE | ATENDENTE |
 |---|:---:|:---:|:---:|
-| Administrar usuários | ✅ | ❌ | ❌ |
+| Administrar usuários e perfis | ✅ | ❌ | ❌ |
 | Consultar pedidos | ✅ | ✅ | ✅ |
 | Criar pedido e avançar status | ❌ | ✅ | ✅ |
 | Aplicar desconto | ❌ | ✅ | ❌ |
 | Cancelar pedido | ❌ | ✅ | ❌ |
-| Consultar clientes | ✅ | ✅ | ✅ |
+| Consultar clientes | ❌ | ✅ | ✅ |
 | Cadastrar e editar clientes | ❌ | ❌ | ✅ |
-| Gerenciar produtos (cardápio) | ❌ | ✅ | ❌ |
+| Excluir cliente | ❌ | ✅ | ❌ |
+| Consultar produtos (cardápio) | ✅ | ✅ | ✅ |
+| Criar, editar e excluir produtos | ✅ | ✅ | ❌ |
 | Consultar auditoria | ✅ | ✅ | ❌ |
+| Dashboard Administrativo | ✅ | ✅ | ❌ |
+
+> As permissões são aplicadas no backend em duas camadas: regras por URL e método HTTP no `SecurityConfig` e `@PreAuthorize` nos services. Os menus e botões escondidos com `sec:authorize` são apenas visuais.
 
 ---
 
@@ -206,7 +275,8 @@ Todas as rotas abaixo exigem autenticação. O acesso sem login redireciona para
 | Método | Rota | Perfis permitidos | Descrição |
 |---|---|---|---|
 | GET | `/login` | Público | Tela de login |
-| GET | `/` | Todos | Dashboard principal |
+| GET | `/` | Todos | Página inicial |
+| GET | `/dashboard` | ADMIN, GERENTE | Dashboard Administrativo |
 | GET | `/pedidos` | Todos | Lista de pedidos |
 | GET | `/pedidos/novo` | GERENTE, ATENDENTE | Formulário de novo pedido |
 | POST | `/pedidos/salvar` | GERENTE, ATENDENTE | Salva novo pedido |
@@ -219,7 +289,7 @@ Todas as rotas abaixo exigem autenticação. O acesso sem login redireciona para
 | POST | `/clientes/salvar` | ATENDENTE | Salva novo cliente |
 | GET | `/clientes/editar/{id}` | ATENDENTE | Formulário de edição |
 | POST | `/clientes/editar/{id}` | ATENDENTE | Salva edição do cliente |
-| GET | `/produtos` | GERENTE | Lista do cardápio |
+| GET | `/produtos` | Todos | Lista do cardápio |
 | GET | `/usuarios` | ADMIN | Lista de usuários |
 | GET | `/usuarios/novo` | ADMIN | Formulário de novo usuário |
 | POST | `/usuarios/salvar` | ADMIN | Salva novo usuário |
@@ -240,31 +310,53 @@ Todas as rotas abaixo exigem autenticação. O acesso sem login redireciona para
 | PUT | `/api/clientes/{id}` | ATENDENTE | Atualiza cliente |
 | DELETE | `/api/clientes/{id}` | GERENTE | Remove cliente |
 | GET | `/api/produtos` | Todos | Lista produtos/cardápio (JSON) |
-| POST | `/api/produtos` | GERENTE | Cria produto |
-| PUT | `/api/produtos/{id}` | GERENTE | Atualiza produto |
-| DELETE | `/api/produtos/{id}` | GERENTE | Remove produto |
+| POST | `/api/produtos` | ADMIN, GERENTE | Cria produto |
+| PUT | `/api/produtos/{id}` | ADMIN, GERENTE | Atualiza produto |
+| DELETE | `/api/produtos/{id}` | ADMIN, GERENTE | Remove produto |
 | GET | `/api/usuarios` | ADMIN | Lista usuários (JSON) |
 | GET | `/api/usuarios/{id}` | ADMIN | Detalha usuário |
 | POST | `/api/usuarios` | ADMIN | Cria usuário |
 | PUT | `/api/usuarios/{id}` | ADMIN | Atualiza usuário |
 | DELETE | `/api/usuarios/{id}` | ADMIN | Remove usuário |
+| GET | `/api/dashboard/resumo` | ADMIN, GERENTE | Indicadores gerais de vendas |
+| GET | `/api/dashboard/vendas-por-dia-da-semana` | ADMIN, GERENTE | Pedidos e faturamento de segunda a domingo |
+| GET | `/api/dashboard/vendas-por-hora` | ADMIN, GERENTE | Pedidos e faturamento por horário (0h a 23h) |
+| GET | `/api/dashboard/pedidos-por-status` | ADMIN, GERENTE | Quantidade de pedidos por status |
+| GET | `/api/dashboard/entrega-retirada` | ADMIN, GERENTE | Quantidade de pedidos entregues e retirados |
+| GET | `/api/dashboard/produtos-mais-vendidos` | ADMIN, GERENTE | Ranking de produtos |
+
+> Todas as rotas `/api/**` exigem o token CSRF nas requisições que alteram dados (POST, PUT, DELETE). Sem login respondem `401`, sem permissão `403`, e regras de negócio recusadas `400` com `{"erro": "mensagem"}`.
+
+---
+
+## 🤖 Testes automatizados
+
+**46 testes**, todos aprovados. No IntelliJ: botão direito em `src/test/java` → **Run 'All Tests'**, ou no terminal `mvnw.cmd test`.
+
+| Classe | O que testa |
+|---|---|
+| `DashboardServiceTest` | Cálculos, filtros e tratamento de dados do dashboard |
+| `AutorizacaoBackendTest` | Requisições HTTP com cada perfil: `401` sem login, `403` sem permissão ou sem token CSRF, acesso permitido ao GERENTE e API do dashboard |
+| `PedidoServiceRegrasTest` | Preço vindo do cadastro, produto inexistente ou inativo, desconto (limite, substituição, após a saída), saída gravada no pedido, transições e cancelamento |
+| `ClienteServiceAuditoriaTest` | Auditoria de cliente com valor anterior e novo por campo |
+| `PedidoServiceTest` | Inicialização da aplicação (exige o MongoDB configurado) |
 
 ---
 
 ## 🧪 Testes manuais
 
-Roteiro de testes para verificar os requisitos implementados:
+Roteiro para verificar as funcionalidades:
 
 ### 1. Autenticação e controle de acesso
 
 | # | Ação | Resultado esperado |
 |---|---|---|
 | 1 | Acessar `localhost:8080` sem login | Redirecionado para `/login` |
-| 2 | Login com `admin` / `teste123` | Acessa dashboard, menu sem opções de pedido |
+| 2 | Login com `admin` / `teste123` | Acessa o dashboard, menu sem opções de pedido |
 | 3 | Tentar acessar `/pedidos/novo` como `admin` | Redirecionado para `/acesso-negado` |
-| 4 | Login com `atendente` / `teste123` | Acessa pedidos e clientes, sem ver auditoria |
+| 4 | Login com `atendente` / `teste123` | Acessa pedidos e clientes, sem ver auditoria nem dashboard |
 | 5 | Tentar acessar `/auditoria` como `atendente` | Redirecionado para `/acesso-negado` |
-| 6 | Login com `gerente` / `teste123` | Acessa pedidos, clientes, auditoria e cardápio |
+| 6 | Login com `gerente` / `teste123` | Acessa pedidos, clientes, auditoria, cardápio e dashboard |
 
 ### 2. Fluxo de pedidos
 
@@ -272,33 +364,40 @@ Roteiro de testes para verificar os requisitos implementados:
 |---|---|---|
 | 7 | Criar pedido como `atendente` | Pedido salvo com status `RECEBIDO` e responsável preenchido |
 | 8 | Avançar status para `EM_PREPARACAO` | Transição aceita |
-| 9 | Tentar avançar direto para `FINALIZADO` | Erro — transição inválida |
+| 9 | Tentar avançar direto para `FINALIZADO` | Erro: transição inválida |
 | 10 | Avançar até `PRONTO` → `SAIU_PARA_ENTREGA` → `FINALIZADO` | Todas as transições aceitas em ordem |
+| 11 | Abrir o detalhe de um pedido que já saiu | Mostra data/hora e responsável pela saída |
 
 ### 3. Cancelamento e desconto (apenas GERENTE)
 
 | # | Ação | Resultado esperado |
 |---|---|---|
-| 11 | Criar pedido como `atendente`, logar como `gerente` e cancelar | Pedido com status `CANCELADO` |
-| 12 | Tentar cancelar sem justificativa | Erro de validação |
-| 13 | Aplicar desconto de 10% como `gerente` | Valor total recalculado |
-| 14 | Tentar aplicar desconto de 25% | Erro — limite é 20% |
-| 15 | Tentar cancelar pedido já `FINALIZADO` | Operação bloqueada |
+| 12 | Criar pedido como `atendente`, logar como `gerente` e cancelar | Pedido com status `CANCELADO` |
+| 13 | Tentar cancelar sem justificativa | Erro de validação |
+| 14 | Aplicar desconto de 10% como `gerente` | Valor total recalculado |
+| 15 | Tentar aplicar desconto de 25% | Erro: o limite é 20% |
+| 16 | Aplicar 20% e depois 20% de novo no mesmo pedido | O total fica com 20% de desconto (não 36%) |
+| 17 | Tentar aplicar desconto ou cancelar um pedido que já saiu | Operação bloqueada |
 
 ### 4. Auditoria
 
 | # | Ação | Resultado esperado |
 |---|---|---|
-| 16 | Logar como `admin` e acessar `/auditoria` | Lista todos os eventos registrados |
-| 17 | Filtrar por `usuarioResponsavel=gerente` | Apenas eventos gerados pelo gerente |
-| 18 | Logar como `atendente` e acessar `/auditoria` | Redirecionado para `/acesso-negado` |
+| 18 | Logar como `admin` e acessar `/auditoria` | Lista todos os eventos registrados |
+| 19 | Filtrar por `usuarioResponsavel=gerente` | Apenas eventos gerados pelo gerente |
+| 20 | Como `atendente`, trocar telefone e logradouro de um cliente | Auditoria mostra 2 registros, cada um com o campo, o valor anterior e o novo |
 
 ### 5. Gestão de usuários (apenas ADMIN)
 
 | # | Ação | Resultado esperado |
 |---|---|---|
-| 19 | Logar como `admin` e criar novo usuário | Usuário salvo no banco com senha criptografada |
-| 20 | Logar como `gerente` e tentar acessar `/usuarios` | Redirecionado para `/acesso-negado` |
+| 21 | Logar como `admin` e criar novo usuário | Usuário salvo no banco com senha criptografada |
+| 22 | Logar como `gerente` e tentar acessar `/usuarios` | Redirecionado para `/acesso-negado` |
+| 23 | Como `admin`, tentar mudar o próprio perfil ou excluir a si mesmo | Operação recusada com mensagem |
+
+### 6. Dashboard
+
+O roteiro completo, com os prints, está em [docs/DOCUMENTACAO-DASHBOARD.md](docs/DOCUMENTACAO-DASHBOARD.md#-6-evidências-de-testes).
 
 ---
 
@@ -307,55 +406,82 @@ Roteiro de testes para verificar os requisitos implementados:
 | 🔧 Área | Projeto base | ✅ Esta versão |
 |---|---|---|
 | Perfis de acesso | Todos autenticados recebiam `USER` | `ADMIN`, `GERENTE` e `ATENDENTE` distintos, lidos do MongoDB |
-| CSRF | Desabilitado | Reativado — formulários Thymeleaf protegidos automaticamente |
+| CSRF | Desabilitado | Ativo nos formulários e nas APIs `/api/**` |
 | Status do pedido | Campo de texto livre, qualquer valor aceito | Enum `StatusPedido` com fluxo validado pelo `PedidoService` |
 | Transições de status | Sem validação | `validarTransicaoDeStatus()` bloqueia transições inválidas |
-| Cancelamento | Inexistente | Exclusivo do GERENTE, exige justificativa, bloqueado após saída |
-| Desconto | Inexistente | Exclusivo do GERENTE, máximo 20%, recalculado no servidor |
-| Auditoria | Inexistente | `AuditoriaService` registra automaticamente cada operação relevante |
-| Filtro de auditoria | — | `@RequestParam(required = false)` permite filtrar por usuário ou ação |
+| Preço dos itens | Enviado pelo formulário | Buscado no cadastro de produtos e calculado no servidor |
+| Cancelamento | Inexistente | Exclusivo do GERENTE, exige justificativa, bloqueado após a saída |
+| Desconto | Inexistente | Exclusivo do GERENTE, máximo 20%, sempre sobre o valor original |
+| Auditoria | Inexistente | `AuditoriaService` registra cada operação relevante, com valor anterior e novo |
+| Filtro de auditoria | Inexistente | `@RequestParam(required = false)` permite filtrar por usuário ou ação |
 | Banco de dados | MongoDB local | MongoDB Atlas (nuvem), sem necessidade de instalar localmente |
 | Usuários iniciais | Criados manualmente | `DataInitializer` cria os 3 perfis automaticamente no startup |
-| Segurança por URL | Sem regras detalhadas | `SecurityConfig` com regras específicas por rota e perfil |
+| Segurança | Sem regras detalhadas | `SecurityConfig` com regras por rota, método HTTP e perfil, mais `@PreAuthorize` nos services |
+| Erros de regra de negócio | Erro 500 genérico | Status `400` com a mensagem da regra (JSON na API, página nas telas) |
+| Dashboard | Inexistente | Dashboard Administrativo com API REST própria |
 
 ---
 
 ## 🗂️ Estrutura do projeto
 
 ```
-sistema-de-pizzaria-pediupatrao/
+Sistema-de-Pizzaria-PediuPatrao-com-Dashboard/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/umc/pediupatrao/
 │   │   │   ├── config/
-│   │   │   │   ├── DataInitializer.java      ← cria usuários admin/gerente/atendente no startup
+│   │   │   │   ├── DataInitializer.java        ← cria usuários admin/gerente/atendente no startup
 │   │   │   │   ├── MongoInitConfig.java
-│   │   │   │   └── SecurityConfig.java       ← regras de acesso por URL e perfil
+│   │   │   │   └── SecurityConfig.java         ← regras de acesso por URL e perfil
 │   │   │   ├── controller/
-│   │   │   │   ├── AuditoriaController.java  ← consulta de registros com filtros opcionais
-│   │   │   │   ├── ClienteController.java    ← API REST de clientes
-│   │   │   │   ├── HomeController.java       ← páginas Thymeleaf (usuários, clientes, produtos)
-│   │   │   │   ├── PedidoController.java     ← fluxo de pedidos (MVC)
-│   │   │   │   ├── ProdutoController.java    ← API REST de produtos
-│   │   │   │   └── UsuarioController.java    ← API REST de usuários
+│   │   │   │   ├── AuditoriaController.java    ← consulta de registros com filtros opcionais
+│   │   │   │   ├── ClienteController.java      ← API REST de clientes
+│   │   │   │   ├── DashboardApiController.java ← API REST do dashboard (/api/dashboard/**)
+│   │   │   │   ├── DashboardController.java    ← abre a página /dashboard
+│   │   │   │   ├── GlobalControllerAdvice.java ← respostas de erro 400 (JSON na API, página nas telas)
+│   │   │   │   ├── HomeController.java         ← páginas Thymeleaf (usuários, clientes, produtos)
+│   │   │   │   ├── PedidoController.java       ← fluxo de pedidos (MVC)
+│   │   │   │   ├── ProdutoController.java      ← API REST de produtos
+│   │   │   │   └── UsuarioController.java      ← API REST de usuários
+│   │   │   ├── dto/
+│   │   │   │   └── *DTO.java                   ← formatos de resposta da API do dashboard
 │   │   │   ├── entity/
 │   │   │   │   ├── Auditoria.java
 │   │   │   │   ├── Cliente.java
 │   │   │   │   ├── ItemPedido.java
-│   │   │   │   ├── Pedido.java               ← @Document MongoDB, inclui enum StatusPedido
+│   │   │   │   ├── Pedido.java                 ← @Document MongoDB
 │   │   │   │   ├── Produto.java
-│   │   │   │   ├── StatusPedido.java         ← enum com os status válidos do fluxo
+│   │   │   │   ├── StatusPedido.java           ← enum com os status válidos do fluxo
 │   │   │   │   └── Usuario.java
 │   │   │   ├── repository/
-│   │   │   │   └── *.java                    ← repositórios Spring Data MongoDB
+│   │   │   │   └── *.java                      ← repositórios Spring Data MongoDB
 │   │   │   └── service/
-│   │   │       ├── AuditoriaService.java     ← persiste registros de auditoria
-│   │   │       ├── PedidoService.java        ← regras de negócio, validação de transições
-│   │   │       └── UsuarioDetailsService.java← integração com Spring Security
+│   │   │       ├── AuditoriaService.java       ← grava os registros de auditoria
+│   │   │       ├── ClienteService.java         ← cadastro e auditoria campo a campo
+│   │   │       ├── DashboardService.java       ← cálculos e filtros do dashboard
+│   │   │       ├── PedidoService.java          ← regras de negócio e validação de transições
+│   │   │       ├── UsuarioDetailsService.java  ← integração com o Spring Security
+│   │   │       └── UsuarioService.java         ← gestão de usuários e perfis
 │   │   └── resources/
-│   │       ├── application.properties        ← configuração do MongoDB Atlas
-│   │       └── templates/                    ← páginas HTML com Thymeleaf
+│   │       ├── application.properties          ← configuração do MongoDB Atlas
+│   │       └── templates/                      ← páginas HTML com Thymeleaf (dashboard/painel.html)
+│   └── test/java/com/umc/pediupatrao/          ← testes automatizados
+├── docs/
+│   ├── DOCUMENTACAO-DASHBOARD.md               ← requisitos, endpoints, testes e decisões do dashboard
+│   └── evidencias/                             ← prints dos testes
 ├── pom.xml
 └── README.md
 ```
 
+---
+
+## 🌿 Gitflow
+
+O projeto segue o **gitflow**: cada funcionalidade é desenvolvida em uma branch `feature/`, integrada à `develop` por Pull Request e, depois de testada, levada para a `main`.
+
+| Branch | Conteúdo |
+|---|---|
+| `main` | Versão estável do sistema |
+| `develop` | Integração das funcionalidades antes de irem para a `main` |
+| `feature/correcoes-parte1` | Regras de pedidos, auditoria, gestão de usuários e segurança |
+| `feature/dashboard-api` | API e tela do Dashboard Administrativo, testes e documentação |

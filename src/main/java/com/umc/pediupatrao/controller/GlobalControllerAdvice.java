@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 @ControllerAdvice
@@ -25,6 +26,18 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(RegraDeNegocioException.class)
     public ModelAndView tratarRegraDeNegocio(RegraDeNegocioException e, HttpServletRequest request) {
         return respostaDeErro(e.getMessage(), request);
+    }
+
+    // DASHBOARD: parâmetro em formato errado na URL
+    // Exemplo: ?dataInicio=09/11/2026 (o certo é 2026-11-09) ou ?limite=abc (número inválido)
+    // Sem este tratamento, o Spring devolveria um erro 400 genérico, sem explicar o que estava errado
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ModelAndView tratarParametroInvalido(MethodArgumentTypeMismatchException e, HttpServletRequest request) {
+        String mensagem = "Valor inválido para o parâmetro '" + e.getName() + "'.";
+        if (e.getName().startsWith("data")) {
+            mensagem += " Use o formato AAAA-MM-DD (ex: 2026-11-09).";
+        }
+        return respostaDeErro(mensagem, request);
     }
 
     // Monta a resposta de erro 400: JSON para a API, página error.html para as telas
