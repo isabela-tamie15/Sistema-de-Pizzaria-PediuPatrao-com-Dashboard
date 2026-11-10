@@ -22,6 +22,8 @@
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <start-class>com.umc.pediupatrao.PizzariaPedidosApplication</start-class>
+        <!-- Permite o Mockito rodar no Java 25, que é mais novo que a versão que ele reconhece -->
+        <argLine>-Dnet.bytebuddy.experimental=true</argLine>
     </properties>
 
     <dependencies>

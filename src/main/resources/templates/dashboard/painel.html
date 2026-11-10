@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+
+<!-- Dashboard Administrativo -->
+<!-- Esta página não recebe os números do servidor ao abrir: o JavaScript no final busca tudo na API -->
+<!-- /api/dashboard/** com fetch() (RF06), e redesenha os cards e gráficos a cada atualização (RF07) -->
+<div class="container-fluid py-4 px-4" th:fragment="content">
+
+    <!-- Cabeçalho -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+            <h2 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard Administrativo</h2>
+            <small class="text-muted">
+                Última atualização: <span id="ultima-atualizacao">-</span>
+            </small>
+        </div>
+        <!-- RF07: busca os dados de novo na API -->
+        <button class="btn btn-outline-primary" onclick="carregarDashboard()">
+            <i class="bi bi-arrow-clockwise me-1"></i>Atualizar
+        </button>
+    </div>
+
+    <!-- RF05: filtros de consulta por período -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <form class="row g-2 align-items-end" onsubmit="aplicarFiltros(event)">
+                <div class="col-sm-6 col-md-4">
+                    <label for="filtro-inicio" class="form-label small mb-1">Data inicial</label>
+                    <input type="date" class="form-control" id="filtro-inicio">
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <label for="filtro-fim" class="form-label small mb-1">Data final</label>
+                    <input type="date" class="form-control" id="filtro-fim">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-1"></i>Aplicar
+                    </button>
+                </div>
+                <!-- Atalhos de período -->
+                <div class="col-12 d-flex flex-wrap gap-2">
+                    <span class="small text-muted align-self-center me-1">Períodos rápidos:</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="periodoRapido(0)">Hoje</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="periodoRapido(29)">30 dias</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="periodoDoAno()">Este ano</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- RF07: mensagens de erro vindas da API (ex: período inválido, sem permissão) -->
+    <div id="alerta-erro" class="alert alert-danger d-none" role="alert"></div>
+
+    <!-- RF01: indicadores gerais de vendas (big numbers) -->
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3">
+            <div class="card shadow-sm h-100 border-start border-primary border-4">
+                <div class="card-body">
+                    <div class="small text-muted">Pedidos realizados</div>
+                    <div class="fs-3 fw-bold" id="kpi-realizados">-</div>
+                    <div class="small text-muted">não cancelados</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card shadow-sm h-100 border-start border-danger border-4">
+                <div class="card-body">
+                    <div class="small text-muted">Pedidos cancelados</div>
+                    <div class="fs-3 fw-bold" id="kpi-cancelados">-</div>
+                    <div class="small text-muted">no período</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card shadow-sm h-100 border-start border-success border-4">
+                <div class="card-body">
+                    <div class="small text-muted">Faturamento</div>
+                    <div class="fs-3 fw-bold" id="kpi-faturamento">-</div>
+                    <div class="small text-muted">soma dos pedidos realizados</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card shadow-sm h-100 border-start border-info border-4">
+                <div class="card-body">
+                    <div class="small text-muted">Ticket médio</div>
+                    <div class="fs-3 fw-bold" id="kpi-ticket">-</div>
+                    <div class="small text-muted">valor médio por pedido</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RF02: dias e horários com mais pedidos -->
+    <div class="row g-3 mb-3">
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">
+                    <i class="bi bi-calendar-week me-1"></i>Pedidos por dia da semana
+                </div>
+                <div class="card-body" style="height: 300px;">
+                    <canvas id="grafico-dia-semana"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">
+                    <i class="bi bi-clock me-1"></i>Pedidos por horário
+                </div>
+                <div class="card-body" style="height: 300px;">
+                    <canvas id="grafico-horario"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RF03 e RF04: situação dos pedidos, entrega x retirada e produtos mais vendidos -->
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">
+                    <i class="bi bi-pie-chart me-1"></i>Pedidos por status
+                </div>
+                <div class="card-body" style="height: 300px;">
+                    <canvas id="grafico-status"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">
+                    <i class="bi bi-truck me-1"></i>Entrega x Retirada
+                </div>
+                <div class="card-body" style="height: 300px;">
+                    <canvas id="grafico-entrega"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">
+                    <i class="bi bi-trophy me-1"></i>Produtos mais vendidos
+                </div>
+                <div class="card-body" style="height: 300px;">
+                    <canvas id="grafico-produtos"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js 2.9.4, que já vem na pasta plugins do projeto -->
+    <script th:src="@{/plugins/chart.js/Chart.min.js}"></script>
+
+    <script>
+        // ===== Variáveis =====
+
+        // Guardamos cada gráfico para poder apagar o antigo antes de desenhar de novo
+        let graficoDiaSemana = null;
+        let graficoEntrega = null;
+        let graficoStatus = null;
+        let graficoProdutos = null;
+        let graficoHorario = null;
+
+        // Uma cor para cada status, na ordem do fluxo do pedido
+        const CORES_STATUS = {
+            RECEBIDO: '#0d6efd',
+            EM_PREPARACAO: '#fd7e14',
+            PRONTO: '#20c997',
+            SAIU_PARA_ENTREGA: '#6f42c1',
+            RETIRADO: '#0dcaf0',
+            FINALIZADO: '#198754',
+            CANCELADO: '#dc3545'
+        };
+
+        // ===== Funções de formatação =====
+
+        // 742.5 → "R$ 742,50"
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // Date do JavaScript → "2026-11-09", o formato do campo de data e da API
+        function formatarParaApi(data) {
+            const mes = String(data.getMonth() + 1).padStart(2, '0');
+            const dia = String(data.getDate()).padStart(2, '0');
+            return data.getFullYear() + '-' + mes + '-' + dia;
+        }
+
+        // ===== Filtros (RF05) =====
+
+        // Hoje (0 dias para trás) ou últimos 30 dias (29 dias para trás + hoje)
+        function periodoRapido(diasParaTras) {
+            const hoje = new Date();
+            const inicio = new Date();
+            inicio.setDate(hoje.getDate() - diasParaTras);
+            definirPeriodo(inicio, hoje);
+        }
+
+        // De 1º de janeiro até hoje
+        function periodoDoAno() {
+            const hoje = new Date();
+            const primeiroDeJaneiro = new Date(hoje.getFullYear(), 0, 1);
+            definirPeriodo(primeiroDeJaneiro, hoje);
+        }
+
+        function definirPeriodo(inicio, fim) {
+            document.getElementById('filtro-inicio').value = formatarParaApi(inicio);
+            document.getElementById('filtro-fim').value = formatarParaApi(fim);
+            carregarDashboard();
+        }
+
+        // Botão Aplicar: evita recarregar a página e busca os dados com as datas escolhidas
+        function aplicarFiltros(evento) {
+            evento.preventDefault();
+            carregarDashboard();
+        }
+
+        // ===== Integração com a API (RF06) =====
+
+        // Monta o endereço da API com as datas escolhidas
+        // Exemplo: /api/dashboard/resumo?dataInicio=2026-11-01&dataFim=2026-11-09
+        function montarUrl(caminho, extras) {
+            const inicio = document.getElementById('filtro-inicio').value;
+            const fim = document.getElementById('filtro-fim').value;
+
+            let url = '/api/dashboard' + caminho + '?dataInicio=' + inicio + '&dataFim=' + fim;
+            if (extras) {
+                url += '&' + extras;
+            }
+            return url;
+        }
+
+        // Faz a chamada na API e devolve os dados em JSON
+        // RF07: se a API responder com erro, lança a mensagem para ser mostrada na tela
+        async function buscar(url) {
+            const resposta = await fetch(url);
+
+            if (resposta.status === 401) {
+                throw new Error('Sua sessão expirou. Faça login novamente.');
+            }
+            if (resposta.status === 403) {
+                throw new Error('Seu perfil não tem acesso ao dashboard.');
+            }
+            if (!resposta.ok) {
+                // Nas regras de negócio, a API devolve {"erro": "mensagem"}
+                const corpo = await resposta.json();
+                throw new Error(corpo.erro);
+            }
+            return resposta.json();
+        }
+
+        // Busca tudo na API e desenha a tela
+        async function carregarDashboard() {
+            document.getElementById('alerta-erro').classList.add('d-none');
+
+            try {
+                const resumo = await buscar(montarUrl('/resumo'));
+                const diasDaSemana = await buscar(montarUrl('/vendas-por-dia-da-semana'));
+                const horarios = await buscar(montarUrl('/vendas-por-hora'));
+                const pedidosPorStatus = await buscar(montarUrl('/pedidos-por-status'));
+                const saidas = await buscar(montarUrl('/entrega-retirada'));
+                const produtos = await buscar(montarUrl('/produtos-mais-vendidos', 'limite=5'));
+
+                desenharCards(resumo);
+                desenharGraficoDiaSemana(diasDaSemana);
+                desenharGraficoHorario(horarios);
+                desenharGraficoStatus(pedidosPorStatus);
+                desenharGraficoEntrega(saidas);
+                desenharGraficoProdutos(produtos);
+
+                document.getElementById('ultima-atualizacao').textContent = new Date().toLocaleTimeString('pt-BR');
+            } catch (erro) {
+                const alerta = document.getElementById('alerta-erro');
+                alerta.textContent = erro.message;
+                alerta.classList.remove('d-none');
+            }
+        }
+
+        // ===== Desenho da tela =====
+
+        // RF01: os 4 big numbers
+        function desenharCards(resumo) {
+            document.getElementById('kpi-realizados').textContent = resumo.pedidosRealizados;
+            document.getElementById('kpi-cancelados').textContent = resumo.pedidosCancelados;
+            document.getElementById('kpi-faturamento').textContent = formatarMoeda(resumo.faturamento);
+            document.getElementById('kpi-ticket').textContent = formatarMoeda(resumo.ticketMedio);
+        }
+
+        // RF02: gráfico de barras com a quantidade de pedidos em cada dia da semana
+        // Mostra os dias de maior movimento da pizzaria
+        function desenharGraficoDiaSemana(diasDaSemana) {
+            if (graficoDiaSemana) {
+                graficoDiaSemana.destroy();
+            }
+            graficoDiaSemana = new Chart(document.getElementById('grafico-dia-semana'), {
+                type: 'bar',
+                data: {
+                    labels: diasDaSemana.map(d => d.diaSemana),
+                    datasets: [{
+                        label: 'Pedidos',
+                        data: diasDaSemana.map(d => d.quantidadePedidos),
+                        backgroundColor: '#198754'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    legend: { display: false },
+                    scales: { yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] }
+                }
+            });
+        }
+
+        // RF03: gráfico de rosca com a quantidade de pedidos em cada status
+        function desenharGraficoStatus(pedidosPorStatus) {
+            if (graficoStatus) {
+                graficoStatus.destroy();
+            }
+            // Status com zero pedidos ficam fora, para não poluir a legenda
+            const comPedidos = pedidosPorStatus.filter(s => s.quantidade > 0);
+
+            graficoStatus = new Chart(document.getElementById('grafico-status'), {
+                type: 'doughnut',
+                data: {
+                    labels: comPedidos.map(s => s.descricao),
+                    datasets: [{
+                        data: comPedidos.map(s => s.quantidade),
+                        backgroundColor: comPedidos.map(s => CORES_STATUS[s.status])
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    legend: { position: 'bottom' }
+                }
+            });
+        }
+
+        // RF03: gráfico de pizza com quantos pedidos foram entregues e quantos foram retirados
+        function desenharGraficoEntrega(saidas) {
+            if (graficoEntrega) {
+                graficoEntrega.destroy();
+            }
+            graficoEntrega = new Chart(document.getElementById('grafico-entrega'), {
+                type: 'pie',
+                data: {
+                    labels: saidas.map(s => s.tipo),
+                    datasets: [{
+                        data: saidas.map(s => s.quantidade),
+                        // Mesmas cores dos status SAIU_PARA_ENTREGA e RETIRADO no gráfico de status
+                        backgroundColor: [CORES_STATUS.SAIU_PARA_ENTREGA, CORES_STATUS.RETIRADO]
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    legend: { position: 'bottom' }
+                }
+            });
+        }
+
+        // RF04: gráfico de barras deitadas com os 5 produtos mais vendidos
+        function desenharGraficoProdutos(produtos) {
+            if (graficoProdutos) {
+                graficoProdutos.destroy();
+            }
+            graficoProdutos = new Chart(document.getElementById('grafico-produtos'), {
+                type: 'horizontalBar',
+                data: {
+                    labels: produtos.map(p => p.produto),
+                    datasets: [{
+                        label: 'Quantidade vendida',
+                        data: produtos.map(p => p.quantidade),
+                        backgroundColor: '#fd7e14'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    legend: { display: false },
+                    scales: { xAxes: [{ ticks: { beginAtZero: true } }] }
+                }
+            });
+        }
+
+        // RF02: gráfico de barras com a quantidade de pedidos em cada hora do dia
+        // Mostra os horários de maior movimento da pizzaria
+        function desenharGraficoHorario(horarios) {
+            if (graficoHorario) {
+                graficoHorario.destroy();
+            }
+            graficoHorario = new Chart(document.getElementById('grafico-horario'), {
+                type: 'bar',
+                data: {
+                    labels: horarios.map(h => h.hora + 'h'),
+                    datasets: [{
+                        label: 'Pedidos',
+                        data: horarios.map(h => h.quantidadePedidos),
+                        backgroundColor: '#6f42c1'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    legend: { display: false },
+                    scales: { yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] }
+                }
+            });
+        }
+
+        // ===== Ao abrir a página =====
+        // Começa com os últimos 30 dias
+        periodoRapido(29);
+    </script>
+</div>
+
+</body>
+</html>

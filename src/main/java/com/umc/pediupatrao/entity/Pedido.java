@@ -25,10 +25,20 @@ public class Pedido {
 
     private StatusPedido status;
 
+    // Data e hora de ENTRADA do pedido (RF02 e RF03), preenchida pelo PedidoService na criação
     private LocalDateTime dataPedido;
+
+    // PARTE 2: valor dos itens antes do desconto (soma de quantidade x preço do cadastro de produtos)
+    // Guardamos separado para o desconto ser sempre calculado sobre o valor original,
+    // e para mostrar na tela quanto foi concedido de desconto
+    private Double valorBruto;
+
+    // PARTE 2: valor em reais que foi descontado (ex: 10% de R$ 50,00 = R$ 5,00)
+    private Double valorDesconto;
 
     // Tipo Double (com D maiúsculo) para aceitar null antes do desconto ser calculado
     // double minúsculo não aceita null, causaria NullPointerException no PedidoService
+    // valorTotal é o valor final do pedido: valorBruto - valorDesconto
     private Double valorTotal;
 
     private String observacoes;
@@ -40,6 +50,18 @@ public class Pedido {
     // Usuário que registrou o pedido (RF02 - responsável pelo registro)
     // Preenchido automaticamente pelo PedidoService a partir do usuário autenticado
     private String responsavelPeloRegistro;
+
+    // PARTE 2 (RF03): quem registrou a SAÍDA do pedido (SAIU_PARA_ENTREGA ou RETIRADO)
+    // Na Parte 1 essa informação só ia para a auditoria e não ficava salva no pedido
+    private String responsavelSaida;
+
+    // PARTE 2 (RF03): data e hora em que o pedido saiu para entrega ou foi retirado
+    private LocalDateTime dataHoraSaida;
+
+    // PARTE 2 (Dashboard): guarda se a saída foi ENTREGA (SAIU_PARA_ENTREGA) ou RETIRADA (RETIRADO)
+    // Precisamos guardar separado porque depois o status muda para FINALIZADO
+    // e, sem este campo, não daria mais para saber como o pedido saiu
+    private StatusPedido tipoSaida;
 
     // Getters e Setters
 
@@ -83,6 +105,22 @@ public class Pedido {
         this.dataPedido = dataPedido;
     }
 
+    public Double getValorBruto() {
+        return valorBruto;
+    }
+
+    public void setValorBruto(Double valorBruto) {
+        this.valorBruto = valorBruto;
+    }
+
+    public Double getValorDesconto() {
+        return valorDesconto;
+    }
+
+    public void setValorDesconto(Double valorDesconto) {
+        this.valorDesconto = valorDesconto;
+    }
+
     public Double getValorTotal() {
         return valorTotal;
     }
@@ -117,6 +155,32 @@ public class Pedido {
         this.responsavelPeloRegistro = responsavelPeloRegistro;
     }
 
+    // Responsável e horário de saída (RF03)
+    public String getResponsavelSaida() {
+        return responsavelSaida;
+    }
+
+    public void setResponsavelSaida(String responsavelSaida) {
+        this.responsavelSaida = responsavelSaida;
+    }
+
+    public LocalDateTime getDataHoraSaida() {
+        return dataHoraSaida;
+    }
+
+    public void setDataHoraSaida(LocalDateTime dataHoraSaida) {
+        this.dataHoraSaida = dataHoraSaida;
+    }
+
+    // Tipo de saída: entrega ou retirada (Dashboard)
+    public StatusPedido getTipoSaida() {
+        return tipoSaida;
+    }
+
+    public void setTipoSaida(StatusPedido tipoSaida) {
+        this.tipoSaida = tipoSaida;
+    }
+
 }
 
 
@@ -138,3 +202,9 @@ public class Pedido {
 //observacoes foi adicionado para ter campo livre para o cliente pedir personalização do pedido
 //desconto foi adicionado para registrar o percentual de desconto do GERENTE (RF04, máximo 20%)
 //responsavelPeloRegistro foi adicionado para cumprir RF02: registrar quem criou o pedido
+
+//ACRÉSCIMOS da PARTE 2 (correções apontadas pelo professor):
+
+//valorBruto e valorDesconto: separam o valor original dos itens do valor descontado
+//responsavelSaida e dataHoraSaida: agora a saída fica salva no próprio pedido, e não só na auditoria
+//tipoSaida: guarda se o pedido foi entregue ou retirado, para o gráfico Entrega x Retirada do dashboard

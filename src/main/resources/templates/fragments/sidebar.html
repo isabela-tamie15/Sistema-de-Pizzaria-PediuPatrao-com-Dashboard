@@ -25,8 +25,18 @@
                 </a>
             </li>
 
+            <!-- Dashboard - ADMIN e GERENTE acompanham as vendas (PARTE 2) -->
+            <li class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'GERENTE')">
+                <a class="nav-link sidebar-link" th:href="@{/dashboard}"
+                   th:classappend="${currentUri.startsWith('/dashboard')} ? ' active'">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    <span class="d-none d-md-inline">Dashboard</span>
+                </a>
+            </li>
+
             <!-- Clientes -->
-            <li class="nav-item">
+            <!-- PARTE 2: só ATENDENTE (cadastra) e GERENTE (consulta) veem este menu -->
+            <li class="nav-item" sec:authorize="hasAnyRole('ATENDENTE', 'GERENTE')">
                 <a class="nav-link sidebar-link" th:href="@{/clientes}"
                    th:classappend="${currentUri.startsWith('/clientes')} ? ' active'">
                     <i class="bi bi-person-raised-hand me-2"></i>
@@ -61,11 +71,20 @@
                 </a>
             </li>
 
+            <!-- PARTE 2: Usuários - só ADMIN administra usuários e perfis -->
+            <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                <a class="nav-link sidebar-link" th:href="@{/usuarios}"
+                   th:classappend="${currentUri.startsWith('/usuarios')} ? ' active'">
+                    <i class="bi bi-people-fill me-2"></i>
+                    <span class="d-none d-md-inline">Usuários</span>
+                </a>
+            </li>
+
             <!-- Divisor -->
             <li><hr class="sidebar-divider"></li>
             <li class="sidebar-section-label d-none d-md-block"></li>
             <!-- Configurações com submenu -->
-            <li class="nav-item" id="menu-configuracoes">
+            <li class="nav-item" id="menu-configuracoes" sec:authorize="hasAnyRole('ADMIN', 'GERENTE')">
                 <a class="nav-link sidebar-link d-flex justify-content-between align-items-center"
                    href="#">
                     <span>

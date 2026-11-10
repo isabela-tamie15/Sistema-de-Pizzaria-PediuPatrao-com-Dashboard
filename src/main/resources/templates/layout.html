@@ -1,30 +1,45 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Pediu Patrão - Sistema de Pedidos</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-        <link rel="stylesheet" th:href="@{/css/style.css}">
-    </head>
-    <body>
-        <!-- Botão para abrir/fechar a sidebar em telas pequenas -->
-        <div class="toggle-btn btn btn-dark d-md-none">
-            <span>&#9776;</span>
-        </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pediu Patrão - Sistema de Pedidos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 
-        <!-- Sidebar incluído como fragmento -->
-        <aside>
-            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
-        </aside>
+    <!-- PARTE 2: token CSRF disponível para o JavaScript das telas -->
+    <!-- Formulários com th:action já recebem o token sozinhos; as chamadas fetch() precisam enviar no cabeçalho -->
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <script>
+        // Monta os cabeçalhos de uma chamada fetch() incluindo o token CSRF
+        // Exemplo: fetch(url, { method: 'DELETE', headers: cabecalhosCsrf() })
+        function cabecalhosCsrf(cabecalhos = {}) {
+            const token = document.querySelector('meta[name="_csrf"]').content;
+            const nomeCabecalho = document.querySelector('meta[name="_csrf_header"]').content;
+            cabecalhos[nomeCabecalho] = token;
+            return cabecalhos;
+        }
+    </script>
+</head>
+<body>
+<!-- Botão para abrir/fechar a sidebar em telas pequenas -->
+<div class="toggle-btn btn btn-dark d-md-none">
+    <span>&#9776;</span>
+</div>
 
-        <!-- Conteúdo Principal -->
-        <main class="container-fluid mt-4">
-            <div th:replace="~{__${content}__}"></div>
-        </main>
+<!-- Sidebar incluído como fragmento -->
+<aside>
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+</aside>
 
-        <script th:src="@{/js/script.js}"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+<!-- Conteúdo Principal -->
+<main class="container-fluid mt-4">
+    <div th:replace="~{__${content}__}"></div>
+</main>
+
+<script th:src="@{/js/script.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

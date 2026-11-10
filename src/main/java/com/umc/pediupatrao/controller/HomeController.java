@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import com.umc.pediupatrao.entity.Cliente;
 import com.umc.pediupatrao.entity.Produto;
 import com.umc.pediupatrao.entity.Usuario;
+import com.umc.pediupatrao.exception.RegraDeNegocioException;
 import com.umc.pediupatrao.service.ClienteService;
 import com.umc.pediupatrao.service.ProdutoService;
 import com.umc.pediupatrao.service.UsuarioService;
@@ -69,6 +70,10 @@ public class HomeController {
     public String editarUsuarioForm(@PathVariable String id, Model model,
                                     RedirectAttributes redirectAttributes) {
         boolean encontrado = usuarioService.buscarPorId(id).map(u -> {
+            // PARTE 2: limpamos a senha antes de mandar para a tela
+            // Na Parte 1 o th:field preenchia o campo com o hash da senha, e ao salvar
+            // o hash era criptografado de novo, fazendo o usuário perder o acesso
+            u.setPassword(null);
             model.addAttribute("usuario", u);
             return true;
         }).orElse(false);
@@ -85,8 +90,14 @@ public class HomeController {
     @PostMapping("/usuarios/salvar")
     public String salvarUsuario(@ModelAttribute Usuario usuario,
                                 RedirectAttributes redirectAttributes) {
-        usuarioService.salvarUsuario(usuario);
-        redirectAttributes.addFlashAttribute("sucesso", "Usuário criado com sucesso!");
+        // PARTE 2: se o UsuarioService recusar (perfil inválido, username repetido),
+        // a mensagem aparece no alerta vermelho da lista de usuários
+        try {
+            usuarioService.salvarUsuario(usuario);
+            redirectAttributes.addFlashAttribute("sucesso", "Usuário criado com sucesso!");
+        } catch (RegraDeNegocioException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        }
         return "redirect:/usuarios";
     }
 
@@ -94,16 +105,24 @@ public class HomeController {
     public String atualizarUsuario(@PathVariable String id,
                                    @ModelAttribute Usuario usuario,
                                    RedirectAttributes redirectAttributes) {
-        usuarioService.atualizarUsuario(id, usuario);
-        redirectAttributes.addFlashAttribute("sucesso", "Usuário atualizado com sucesso!");
+        try {
+            usuarioService.atualizarUsuario(id, usuario);
+            redirectAttributes.addFlashAttribute("sucesso", "Usuário atualizado com sucesso!");
+        } catch (RegraDeNegocioException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        }
         return "redirect:/usuarios";
     }
 
     @PostMapping("/usuarios/deletar/{id}")
     public String deletarUsuario(@PathVariable String id,
                                  RedirectAttributes redirectAttributes) {
-        usuarioService.deletarUsuario(id);
-        redirectAttributes.addFlashAttribute("sucesso", "Usuário removido com sucesso!");
+        try {
+            usuarioService.deletarUsuario(id);
+            redirectAttributes.addFlashAttribute("sucesso", "Usuário removido com sucesso!");
+        } catch (RegraDeNegocioException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        }
         return "redirect:/usuarios";
     }
 
@@ -141,7 +160,8 @@ public class HomeController {
     @PostMapping("/clientes/salvar")
     public String salvarCliente(@ModelAttribute Cliente cliente,
                                 RedirectAttributes redirectAttributes) {
-        clienteService.salvar(cliente);
+        // PARTE 2: novoCliente zera o id, então o cadastro nunca sobrescreve um cliente existente
+        clienteService.novoCliente(cliente);
         redirectAttributes.addFlashAttribute("sucesso", "Cliente criado com sucesso!");
         return "redirect:/clientes";
     }

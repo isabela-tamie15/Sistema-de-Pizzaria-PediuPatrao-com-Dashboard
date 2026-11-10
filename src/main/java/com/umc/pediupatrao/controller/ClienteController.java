@@ -28,7 +28,8 @@ public class ClienteController {
 
     @PostMapping
     public ResponseEntity<Cliente> salvarCliente(@RequestBody Cliente cliente) {
-        Cliente salvo = clienteService.salvar(cliente);
+        // PARTE 2: novoCliente zera o id, então um POST nunca sobrescreve um cliente existente
+        Cliente salvo = clienteService.novoCliente(cliente);
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
