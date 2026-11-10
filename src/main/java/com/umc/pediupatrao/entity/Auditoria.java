@@ -18,8 +18,16 @@ public class Auditoria {
     // Perfil do usuário que executou a ação (ADMIN, GERENTE, ATENDENTE)
     private String perfilUsuario;
 
+    // PARTE 2: tipo da entidade afetada (PEDIDO, CLIENTE ou USUARIO)
+    // O enunciado pede "tipo de operação e entidade afetada, incluindo seu identificador"
+    private String entidade;
+
     // Identificador da entidade afetada (id do pedido ou do cliente)
     private String entidadeId;
+
+    // PARTE 2: nome do campo que mudou (ex: telefone, logradouro, status)
+    // Na Parte 1 não sabíamos qual campo do cliente tinha sido alterado
+    private String campoAlterado;
 
     private String descricao;
 
@@ -66,6 +74,22 @@ public class Auditoria {
 
     public void setPerfilUsuario(String perfilUsuario) {
         this.perfilUsuario = perfilUsuario;
+    }
+
+    public String getEntidade() {
+        return entidade;
+    }
+
+    public void setEntidade(String entidade) {
+        this.entidade = entidade;
+    }
+
+    public String getCampoAlterado() {
+        return campoAlterado;
+    }
+
+    public void setCampoAlterado(String campoAlterado) {
+        this.campoAlterado = campoAlterado;
     }
 
     public String getEntidadeId() {
@@ -121,7 +145,9 @@ public class Auditoria {
 // acao: mostra o que aconteceu ("PEDIDO_CRIADO", "PEDIDO_CANCELADO", etc)
 // usuarioResponsavel: mostra o login de quem executou a ação
 // perfilUsuario: mostra o perfil de quem executou (ADMIN, GERENTE, ATENDENTE)
+// entidade: tipo do registro afetado (PEDIDO, CLIENTE ou USUARIO)
 // entidadeId: id do pedido ou cliente afetado pela ação
+// campoAlterado: qual campo mudou (ex: telefone), para cada alteração de cliente gerar um registro próprio
 // descricao: mostra detalhes do que aconteceu
 // valorAnterior: valor do campo antes da alteração (ex: status anterior do pedido)
 // valorNovo: valor do campo após a alteração (ex: novo status do pedido)

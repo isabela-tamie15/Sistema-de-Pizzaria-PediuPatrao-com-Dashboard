@@ -62,17 +62,19 @@
         <tr>
           <th class="ps-3">Data/Hora</th>
           <th>Ação</th>
+          <th>Entidade</th>
           <th>Entidade ID</th>
+          <th>Campo</th>
           <th>Descrição</th>
           <th>Valor Anterior</th>
           <th>Valor Novo</th>
           <th>Justificativa</th>
-          <th class="pe-3">Usuário</th>
+          <th class="pe-3">Usuário (Perfil)</th>
         </tr>
         </thead>
         <tbody>
         <tr th:if="${#lists.isEmpty(registros)}">
-          <td colspan="8" class="text-center text-muted py-4">Nenhum registro de auditoria encontrado.</td>
+          <td colspan="10" class="text-center text-muted py-4">Nenhum registro de auditoria encontrado.</td>
         </tr>
         <tr th:each="registro : ${registros}">
           <td class="ps-3 small text-nowrap"
@@ -87,12 +89,15 @@
                                   th:text="${registro.acao}">
                             </span>
           </td>
+          <td class="small" th:text="${registro.entidade != null} ? ${registro.entidade} : '-'"></td>
           <td class="small text-muted" th:text="${registro.entidadeId}"></td>
+          <td class="small fw-semibold" th:text="${registro.campoAlterado != null} ? ${registro.campoAlterado} : '-'"></td>
           <td class="small" th:text="${registro.descricao}"></td>
           <td class="small text-muted" th:text="${registro.valorAnterior != null} ? ${registro.valorAnterior} : '-'"></td>
           <td class="small" th:text="${registro.valorNovo != null} ? ${registro.valorNovo} : '-'"></td>
           <td class="small text-warning" th:text="${registro.justificativa != null} ? ${registro.justificativa} : '-'"></td>
-          <td class="pe-3 small fw-semibold" th:text="${registro.usuarioResponsavel}"></td>
+          <td class="pe-3 small fw-semibold"
+              th:text="${registro.usuarioResponsavel} + (${registro.perfilUsuario != null} ? ' (' + ${registro.perfilUsuario} + ')' : '')"></td>
         </tr>
         </tbody>
       </table>

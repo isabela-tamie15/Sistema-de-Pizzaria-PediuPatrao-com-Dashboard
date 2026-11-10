@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <title>Cardápio - Produtos</title>
 </head>
@@ -18,7 +19,9 @@
             <i class="bi bi-pizza me-2 text-primary"></i>🍕 Produtos
         </h2>
         <!-- data-bs-target aponta para o id do modal abaixo; onclick limpa os campos antes de abrir -->
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalProduto" onclick="abrirNovo()">
+        <!-- PARTE 2: só ADMIN e GERENTE alteram o cardápio (a regra real está no SecurityConfig) -->
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalProduto" onclick="abrirNovo()"
+                sec:authorize="hasAnyRole('ADMIN', 'GERENTE')">
             <i class="bi bi-plus-lg me-1"></i> Novo Produto
         </button>
     </div>
@@ -102,9 +105,16 @@
         </div>
     </div>
 
+    <!-- PARTE 2: marcador invisível que só aparece na página para ADMIN e GERENTE -->
+    <!-- O JavaScript abaixo confere se ele existe para mostrar ou esconder Editar/Excluir -->
+    <span id="pode-alterar" sec:authorize="hasAnyRole('ADMIN', 'GERENTE')" hidden></span>
+
     <script>
         // URL base da API REST — ProdutoController está mapeado em /api/produtos
         const API_URL = '/api/produtos';
+
+        // true para ADMIN e GERENTE, false para ATENDENTE
+        const podeAlterar = document.getElementById('pode-alterar') !== null;
         const tabela = document.getElementById('produtos-tabela');
 
         // Formata número para exibição em reais (ex: 29.9 → "R$ 29,90")
@@ -145,6 +155,7 @@
                         </span>
                     </td>
                     <td class="text-end pe-4">
+                        ${podeAlterar ? `
                         <!-- Editar: passa os dados do produto para abrirEditar() preencher o modal -->
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="abrirEditar('${p.id}', '${(p.nome||'').replace(/'/g,"\\'")}', '${p.tipo||''}', ${p.preco||0}, ${p.ativo})">
                             <i class="bi bi-pencil-fill"></i> Editar
@@ -152,7 +163,7 @@
                         <!-- Excluir: chama DELETE na API após confirmação -->
                         <button class="btn btn-sm btn-outline-danger" onclick="excluirProduto('${p.id}')">
                             <i class="bi bi-trash-fill"></i> Excluir
-                        </button>
+                        </button>` : ''}
                     </td>
                 `;
                 tabela.appendChild(row);
@@ -204,7 +215,8 @@
 
             const response = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
+                // PARTE 2: além do Content-Type, envia o token CSRF (função definida no layout.html)
+                headers: cabecalhosCsrf({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify(produto)
             });
 
@@ -221,7 +233,7 @@
         // Exclui o produto via DELETE após confirmação do usuário
         async function excluirProduto(id) {
             if (confirm('Tem certeza que deseja excluir este produto?')) {
-                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: cabecalhosCsrf() });
                 if (response.ok) {
                     carregarProdutos();
                 } else {

@@ -48,7 +48,7 @@
             <dt class="col-sm-4 text-muted">Cliente</dt>
             <dd class="col-sm-8 fw-semibold" th:text="${pedido.nomeCliente}"></dd>
 
-            <dt class="col-sm-4 text-muted">Data</dt>
+            <dt class="col-sm-4 text-muted">Entrada</dt>
             <dd class="col-sm-8" th:text="${pedido.dataPedido != null} ? ${#temporals.format(pedido.dataPedido, 'dd/MM/yyyy HH:mm')} : '-'"></dd>
 
             <dt class="col-sm-4 text-muted">Status</dt>
@@ -63,6 +63,15 @@
                             </span>
             </dd>
 
+            <!-- PARTE 2: valor dos itens antes do desconto e valor descontado -->
+            <dt class="col-sm-4 text-muted">Valor dos Itens</dt>
+            <dd class="col-sm-8"
+                th:text="${pedido.valorBruto != null} ? 'R$ ' + ${#numbers.formatDecimal(pedido.valorBruto, 1, 2)} : '-'"></dd>
+
+            <dt class="col-sm-4 text-muted">Valor Descontado</dt>
+            <dd class="col-sm-8"
+                th:text="${pedido.valorDesconto != null} ? 'R$ ' + ${#numbers.formatDecimal(pedido.valorDesconto, 1, 2)} : '-'"></dd>
+
             <dt class="col-sm-4 text-muted">Valor Total</dt>
             <dd class="col-sm-8 fw-bold"
                 th:text="${pedido.valorTotal != null} ? 'R$ ' + ${#numbers.formatDecimal(pedido.valorTotal, 1, 2)} : '-'"></dd>
@@ -76,6 +85,13 @@
 
             <dt class="col-sm-4 text-muted">Responsável</dt>
             <dd class="col-sm-8" th:text="${pedido.responsavelPeloRegistro != null} ? ${pedido.responsavelPeloRegistro} : '-'"></dd>
+
+            <!-- PARTE 2 (RF03): saída agora fica gravada no pedido -->
+            <dt class="col-sm-4 text-muted">Saída</dt>
+            <dd class="col-sm-8" th:text="${pedido.dataHoraSaida != null} ? ${#temporals.format(pedido.dataHoraSaida, 'dd/MM/yyyy HH:mm')} : '-'"></dd>
+
+            <dt class="col-sm-4 text-muted">Responsável Saída</dt>
+            <dd class="col-sm-8" th:text="${pedido.responsavelSaida != null} ? ${pedido.responsavelSaida} : '-'"></dd>
 
             <dt class="col-sm-4 text-muted">Observações</dt>
             <dd class="col-sm-8" th:text="${pedido.observacoes != null && !#strings.isEmpty(pedido.observacoes)} ? ${pedido.observacoes} : '-'"></dd>
@@ -114,7 +130,8 @@
 
       <!-- Formulário: Alterar Status (visível a todos autenticados) -->
       <!-- Backend garante que o fluxo de status seja respeitado via validarTransicaoDeStatus() -->
-      <div class="card shadow-sm mb-3"
+      <!-- PARTE 2: ADMIN só consulta, então não vê o formulário de status -->
+      <div class="card shadow-sm mb-3" sec:authorize="hasAnyRole('ATENDENTE', 'GERENTE')"
            th:if="${pedido.status.name() != 'FINALIZADO' && pedido.status.name() != 'CANCELADO'}">
         <div class="card-header fw-bold">
           <i class="bi bi-arrow-repeat me-1"></i>Alterar Status
@@ -162,13 +179,19 @@
       </div>
 
       <!-- Formulário: Aplicar Desconto (RF04 - exclusivo GERENTE) -->
+      <!-- PARTE 2: aparece até a saída do pedido. Se já existe desconto, o novo SUBSTITUI o anterior -->
       <div class="card shadow-sm border-warning mb-3" sec:authorize="hasRole('GERENTE')"
-           th:if="${pedido.desconto == null
-                         && pedido.status.name() != 'FINALIZADO' && pedido.status.name() != 'CANCELADO'}">
+           th:if="${pedido.status.name() != 'FINALIZADO' && pedido.status.name() != 'CANCELADO'
+                         && pedido.status.name() != 'SAIU_PARA_ENTREGA' && pedido.status.name() != 'RETIRADO'}">
         <div class="card-header fw-bold text-warning">
-          <i class="bi bi-percent me-1"></i>Aplicar Desconto
+          <i class="bi bi-percent me-1"></i>
+          <span th:text="${pedido.desconto == null} ? 'Aplicar Desconto' : 'Alterar Desconto'">Aplicar Desconto</span>
         </div>
         <div class="card-body">
+          <p class="small text-muted" th:if="${pedido.desconto != null}">
+            Desconto atual: <strong th:text="${pedido.desconto} + '%'"></strong>.
+            O novo percentual substitui o atual e é calculado sobre o valor dos itens.
+          </p>
           <form th:action="@{/pedidos/{id}/desconto(id=${pedido.id})}" method="post">
             <div class="mb-3">
               <label for="percentualDesconto" class="form-label">Percentual de Desconto (1% a 20%)</label>

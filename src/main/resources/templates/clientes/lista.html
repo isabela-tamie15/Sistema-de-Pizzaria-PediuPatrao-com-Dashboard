@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <title>Lista de Clientes</title>
 </head>
@@ -9,7 +10,8 @@
         <h2 class="fw-bold mb-0">
             <i class="bi bi-person-raised-hand me-2 text-primary"></i>Clientes
         </h2>
-        <a href="/clientes/novo" class="btn btn-primary">
+        <!-- PARTE 2: só o ATENDENTE cadastra clientes (a regra real está no SecurityConfig) -->
+        <a href="/clientes/novo" class="btn btn-primary" sec:authorize="hasRole('ATENDENTE')">
             <i class="bi bi-plus-lg me-1"></i> Novo Cliente
         </a>
     </div>
@@ -19,22 +21,32 @@
         <div class="card-body p-0">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
-                    <tr>
-                        <th>Nome</th>
-                        <th>Telefone</th>
-                        <th>Endereço</th>
-                        <th class="text-end pe-4">Ações</th>
-                    </tr>
+                <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Endereço</th>
+                    <th class="text-end pe-4">Ações</th>
+                </tr>
                 </thead>
                 <tbody id="clientes-tabela">
-                    <!-- Linhas carregadas via JavaScript -->
+                <!-- Linhas carregadas via JavaScript -->
                 </tbody>
             </table>
         </div>
     </div>
 
+    <!-- PARTE 2: marcadores invisíveis que só aparecem na página se o perfil tiver a permissão -->
+    <!-- O JavaScript abaixo confere se eles existem para mostrar ou esconder os botões -->
+    <!-- Isso é só visual: se alguém forçar a chamada, o SecurityConfig recusa com 403 -->
+    <span id="pode-editar" sec:authorize="hasRole('ATENDENTE')" hidden></span>
+    <span id="pode-excluir" sec:authorize="hasRole('GERENTE')" hidden></span>
+
     <script>
         const API_URL = '/api/clientes';
+
+        // true se o marcador existe na página, false se o perfil não tem a permissão
+        const podeEditar = document.getElementById('pode-editar') !== null;
+        const podeExcluir = document.getElementById('pode-excluir') !== null;
         const tabelaClientes = document.getElementById('clientes-tabela');
 
         function formatarEndereco(cliente) {
@@ -73,12 +85,14 @@
                     <td>${cliente.telefone || '—'}</td>
                     <td>${formatarEndereco(cliente)}</td>
                     <td class="text-end pe-4">
+                        ${podeEditar ? `
                         <a href="/clientes/editar/${cliente.id}" class="btn btn-sm btn-outline-primary me-1">
                             <i class="bi bi-pencil-fill"></i> Editar
-                        </a>
+                        </a>` : ''}
+                        ${podeExcluir ? `
                         <button class="btn btn-sm btn-outline-danger" onclick="excluirCliente('${cliente.id}')">
                             <i class="bi bi-trash-fill"></i> Excluir
-                        </button>
+                        </button>` : ''}
                     </td>
                 `;
                 tabelaClientes.appendChild(row);
@@ -87,7 +101,8 @@
 
         async function excluirCliente(id) {
             if (confirm('Tem certeza que deseja excluir este cliente?')) {
-                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                // PARTE 2: envia o token CSRF no cabeçalho (função definida no layout.html)
+                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: cabecalhosCsrf() });
                 if (response.ok) {
                     alert('Cliente excluído com sucesso!');
                     carregarClientes();
