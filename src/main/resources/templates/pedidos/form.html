@@ -84,8 +84,10 @@
             </div>
             <div class="col-md-3">
               <!-- Preço preenchido automaticamente ao selecionar o produto -->
-              <input type="number" class="form-control preco-input" id="preco-0"
-                     name="itens[0].precoUnitario" step="0.01" min="0" placeholder="Preço" required>
+              <!-- PARTE 2: readonly e sem name: o preço aqui é só para o usuário ver o total -->
+              <!-- O PedidoService ignora qualquer preço enviado e busca o preço oficial no cadastro de produtos -->
+              <input type="number" class="form-control preco-input bg-light" id="preco-0"
+                     step="0.01" min="0" placeholder="Preço" readonly>
             </div>
             <div class="col-md-1 d-flex align-items-center">
               <!-- Botão remover linha (desabilitado na primeira — sempre precisa de ao menos 1 item) -->
@@ -102,6 +104,7 @@
         </button>
 
         <!-- RF02: total calculado ao vivo no formulário; o servidor recalcula e persiste no banco -->
+        <!-- PARTE 2: aqui é só uma prévia; o servidor recalcula com os preços do cadastro de produtos -->
         <!-- valorTotal NÃO está no formulário como campo oculto: calculado no servidor pelo PedidoService (RF02) -->
         <div class="mb-4 text-end">
           <strong>Total do Pedido: R$ <span id="totalPedido">0,00</span></strong>
@@ -162,8 +165,8 @@
                oninput="calcularTotal()">
       </div>
       <div class="col-md-3">
-        <input type="number" class="form-control" id="preco-${indice}"
-               name="itens[${indice}].precoUnitario" step="0.01" min="0" placeholder="Preço" required>
+        <input type="number" class="form-control preco-input bg-light" id="preco-${indice}"
+               step="0.01" min="0" placeholder="Preço" readonly>
       </div>
       <div class="col-md-1 d-flex align-items-center">
         <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerItem(this)">
@@ -195,7 +198,7 @@
     let total = 0;
     document.querySelectorAll('#itens-container .item-row').forEach(linha => {
       const qtd   = parseFloat(linha.querySelector('[name$=".quantidade"]').value)      || 0;
-      const preco = parseFloat(linha.querySelector('[name$=".precoUnitario"]').value)   || 0;
+      const preco = parseFloat(linha.querySelector('.preco-input').value)               || 0;
       total += qtd * preco;
     });
     document.getElementById('totalPedido').textContent =

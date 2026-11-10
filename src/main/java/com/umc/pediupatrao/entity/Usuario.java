@@ -1,5 +1,6 @@
 package com.umc.pediupatrao.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -8,8 +9,12 @@ public class Usuario {
     @Id
     private String id;
     private String username; // Nome de usuário para login
+    // PARTE 2: WRITE_ONLY faz a senha ser aceita quando chega na API (cadastro),
+    // mas nunca ser devolvida no JSON de resposta
+    // Na Parte 1, GET /api/usuarios devolvia o hash da senha de todos os usuários
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password; // Senha criptografada
-    private String role;     // Papel do usuário, como ADMIN ou USER
+    private String role;     // Perfil do usuário: ADMIN, GERENTE ou ATENDENTE
 
     public String getId() {
         return id;
@@ -42,6 +47,6 @@ public class Usuario {
     public void setRole(String role) {
         this.role = role;
     }
-    
-    
+
+
 }

@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+// API REST de usuários, acessível só para ADMIN (regra no SecurityConfig: /api/usuarios/** hasRole ADMIN)
+// A senha nunca aparece nas respostas, por causa do @JsonProperty(WRITE_ONLY) na entidade Usuario
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
@@ -33,39 +35,26 @@ public class UsuarioController {
     }
 
     // Endpoint para criar um novo usuário
+    // As validações (perfil válido, username repetido, senha obrigatória) ficam no UsuarioService
     @PostMapping
     public ResponseEntity<Usuario> criarUsuario(@RequestBody Usuario usuario) {
-        usuarioService.salvarUsuario(usuario);
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
+        Usuario salvo = usuarioService.salvarUsuario(usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
     // Endpoint para atualizar um usuário
+    // PARTE 2: antes ignorava o perfil e sempre recriptografava a senha;
+    // agora usa o mesmo atualizarUsuario da tela, com as mesmas validações
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> atualizarUsuario(@PathVariable String id, @RequestBody Usuario usuarioAtualizado) {
-        Optional<Usuario> usuarioExistente = usuarioService.buscarPorId(id);
-
-        if (usuarioExistente.isPresent()) {
-            Usuario usuario = usuarioExistente.get();
-            usuario.setUsername(usuarioAtualizado.getUsername());
-            usuario.setPassword(usuarioAtualizado.getPassword());
-            usuarioService.salvarUsuario(usuario);
-
-            return ResponseEntity.ok(usuario);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        Usuario atualizado = usuarioService.atualizarUsuario(id, usuarioAtualizado);
+        return ResponseEntity.ok(atualizado);
     }
 
     // Endpoint para deletar um usuário
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarUsuario(@PathVariable String id) {
-        Optional<Usuario> usuarioExistente = usuarioService.buscarPorId(id);
-
-        if (usuarioExistente.isPresent()) {
-            usuarioService.deletarUsuario(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        usuarioService.deletarUsuario(id);
+        return ResponseEntity.noContent().build();
     }
 }
