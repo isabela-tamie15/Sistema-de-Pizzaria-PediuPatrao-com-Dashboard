@@ -58,6 +58,11 @@ public class Pedido {
     // PARTE 2 (RF03): data e hora em que o pedido saiu para entrega ou foi retirado
     private LocalDateTime dataHoraSaida;
 
+    // PARTE 2 (Dashboard): guarda se a saída foi ENTREGA (SAIU_PARA_ENTREGA) ou RETIRADA (RETIRADO)
+    // Precisamos guardar separado porque depois o status muda para FINALIZADO
+    // e, sem este campo, não daria mais para saber como o pedido saiu
+    private StatusPedido tipoSaida;
+
     // Getters e Setters
 
     public String getId() {
@@ -167,6 +172,15 @@ public class Pedido {
         this.dataHoraSaida = dataHoraSaida;
     }
 
+    // Tipo de saída: entrega ou retirada (Dashboard)
+    public StatusPedido getTipoSaida() {
+        return tipoSaida;
+    }
+
+    public void setTipoSaida(StatusPedido tipoSaida) {
+        this.tipoSaida = tipoSaida;
+    }
+
 }
 
 
@@ -193,3 +207,4 @@ public class Pedido {
 
 //valorBruto e valorDesconto: separam o valor original dos itens do valor descontado
 //responsavelSaida e dataHoraSaida: agora a saída fica salva no próprio pedido, e não só na auditoria
+//tipoSaida: guarda se o pedido foi entregue ou retirado, para o gráfico Entrega x Retirada do dashboard

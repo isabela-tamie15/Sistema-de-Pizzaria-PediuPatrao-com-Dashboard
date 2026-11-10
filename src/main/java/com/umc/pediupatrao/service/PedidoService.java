@@ -160,6 +160,8 @@ public class PedidoService {
         if (novoStatus == StatusPedido.SAIU_PARA_ENTREGA || novoStatus == StatusPedido.RETIRADO) {
             pedido.setResponsavelSaida(usuarioLogado());
             pedido.setDataHoraSaida(LocalDateTime.now());
+            // Dashboard: guarda se foi entrega ou retirada, porque depois o status vira FINALIZADO
+            pedido.setTipoSaida(novoStatus);
             descricao = "Saída registrada por: " + pedido.getResponsavelSaida();
         }
 
