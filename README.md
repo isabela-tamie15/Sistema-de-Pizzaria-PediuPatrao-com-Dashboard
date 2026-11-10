@@ -65,7 +65,7 @@ Painel para o responsável pela pizzaria acompanhar as vendas, a situação dos 
 
 | Vídeo | Link | Conteúdo |
 |---|---|---|
-| 📊 **Dashboard Administrativo** | 🔗 **[Assistir no YouTube](COLE_AQUI_O_LINK_DO_VIDEO_DO_DASHBOARD)** | Dashboard funcionando, API e justificativa das decisões de análise e projeto (até 3 minutos) |
+| 📊 **Dashboard Administrativo** | 🔗 **[Assistir no YouTube](https://youtu.be/YWn1Q0W_gUg)** | Dashboard funcionando, API e justificativa das decisões de análise e projeto |
 | 🍕 Perfis, pedidos e auditoria | 🔗 [Assistir no YouTube](https://youtu.be/dnC8DVx6CdE) | Login com os três perfis, restrições de acesso, fluxo de pedidos, desconto e cancelamento pelo GERENTE e auditoria |
 
 ---

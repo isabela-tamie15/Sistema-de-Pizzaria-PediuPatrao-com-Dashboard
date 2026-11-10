@@ -18,15 +18,15 @@
 
 Projeto desenvolvido para a disciplina de **Análise e Projeto de Software** da Universidade de Mogi das Cruzes (UMC).
 
-| |                                   |
-|---|-----------------------------------|
-| 👩‍🎓 **Autora** | Isabela Tamie Shihara             |
-| 🪪 **RGM** | 11231203887                       |
-| 🏫 **Turma** | 8ºB - Engenharia de Software      |
+| |                                |
+|---|--------------------------------|
+| 👩‍🎓 **Autora** | Isabela Tamie Shihara          |
+| 🪪 **RGM** | 11231203887                    |
+| 🏫 **Turma** | 8ºB - Engenharia de Software   |
 | 🌿 **Branch** | `feature/dashboard-api` |
 | 🖥️ **Tela** | `http://localhost:8080/dashboard` |
 | 🔌 **API** | `http://localhost:8080/api/dashboard/**` |
-| 🎬 **Vídeo (até 3 min)** | 🔗 **[Assistir no YouTube](COLE_AQUI_O_LINK_DO_VIDEO_DO_DASHBOARD)** |
+| 🎬 **Vídeo** | 🔗 **[Assistir no YouTube](https://youtu.be/YWn1Q0W_gUg)** |
 
 <!-- ⚠️ TROCAR "COLE_AQUI_O_LINK_DO_VIDEO_DO_DASHBOARD" PELO LINK DO YOUTUBE -->
 
@@ -47,7 +47,7 @@ Projeto desenvolvido para a disciplina de **Análise e Projeto de Software** da 
 
 O responsável pela pizzaria precisa acompanhar as vendas sem abrir pedido por pedido. O dashboard reúne, em uma tela, os números do período escolhido: quanto foi vendido, quantos pedidos foram realizados e cancelados, o ticket médio, quais produtos saem mais, em quais dias da semana e horários há mais pedidos e quantos pedidos são entregues ou retirados. A tela tem só cards e gráficos, sem tabelas.
 
-Os dados vêm do mesmo MongoDB do sistema de pedidos. A tela não calcula nada: ela busca os números prontos em uma API REST criada para o dashboard.
+Os dados vêm do mesmo MongoDB do sistema de pedidos. A tela não calcula nada, ela busca os números prontos em uma API REST criada para o dashboard.
 
 ### 💡 Perguntas que o dashboard responde
 
